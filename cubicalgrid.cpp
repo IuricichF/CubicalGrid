@@ -17,16 +17,6 @@ CubicalGrid::CubicalGrid(vector<float> val, unsigned int x, unsigned int y, unsi
     zRes=z;
 }
 
-CubicalGrid::CubicalGrid(unsigned int x, unsigned int y, unsigned int z)
-{
-
-    xRes=x;
-    yRes=y;
-    zRes=z;
-
-    addAnalyticFunction();
-
-}
 
 CubicalGrid::CubicalGrid(vector<char*> fileNames, unsigned int x, unsigned int y, unsigned int z)
 {
@@ -48,7 +38,9 @@ CubicalGrid::CubicalGrid(vector<char*> fileNames, unsigned int x, unsigned int y
 
 }
 
+CubicalGrid::CubicalGrid(){
 
+}
 
 CubicalGrid::~CubicalGrid()
 {
@@ -253,6 +245,75 @@ unsigned int CubicalGrid::cellToIndex(GCell cell){
         default:
             cout << "Erro! wrong cell" << endl;
             return 0;
+    }
+}
+
+unsigned short CubicalGrid::internalIndex(GCell cellUp, GCell cellDown){
+
+    switch(cellUp.size()){
+    case 2:
+        assert(cellDown.size()==1);
+        if(cellDown[0]==cellUp[0]) return 0;
+        if(cellDown[0]==cellUp[1]) return 1;
+        return 6;
+    case 4:
+        assert(cellDown.size()==2);
+        if(cellDown[1]==cellUp[1]) return 0;
+        if(cellDown[1]==cellUp[2]) return 1;
+        if(cellDown[0]==cellUp[1]) return 2;
+        if(cellDown[0]==cellUp[2]) return 3;
+        return 7;
+    case 8:
+        assert(cellDown.size()==4);
+        if(cellDown[2]==cellUp[2]) return 0;
+        if(cellDown[3]==cellUp[5]) return 1;
+        if(cellDown[3]==cellUp[6]) return 2;
+        if(cellDown[0]==cellUp[1]) return 3;
+        if(cellDown[0]==cellUp[2]) return 4;
+        if(cellDown[0]==cellUp[4]) return 5;
+        return 8;
+    default:
+        cout << "Wrong cell pair" << endl;
+        return 9;
+    }
+}
+
+GCell CubicalGrid::internalIndexToCell(GCell cellUp, unsigned short index){
+    switch(cellUp.size()){
+    case 2:
+    {
+        GCell vertex = {cellUp[index]};
+        return vertex;
+    }
+    case 4:
+    {
+        GCell edge;
+        switch(index){
+            case 0: edge = {cellUp[0],cellUp[1]}; break;
+            case 1: edge = {cellUp[0],cellUp[2]}; break;
+            case 2: edge = {cellUp[1],cellUp[3]}; break;
+            case 3: edge = {cellUp[2],cellUp[3]}; break;
+            default: cout << "Wrong internal index edge!" << endl; break;
+        }
+        return edge;
+    }
+    case 8:
+    {
+        GCell face;
+        switch(index){
+            case 0: face = {cellUp[0],cellUp[1],cellUp[2],cellUp[3]}; break;
+            case 1: face = {cellUp[0],cellUp[1],cellUp[4],cellUp[5]}; break;
+            case 2: face = {cellUp[0],cellUp[2],cellUp[4],cellUp[6]}; break;
+            case 3: face = {cellUp[1],cellUp[3],cellUp[5],cellUp[7]}; break;
+            case 4: face = {cellUp[2],cellUp[3],cellUp[6],cellUp[7]}; break;
+            case 5: face = {cellUp[4],cellUp[5],cellUp[6],cellUp[7]}; break;
+            default: cout << "Wrong internal index face!" << endl; break;
+        }
+        return face;
+    }
+    default:
+        cout << "Wrong internal index!" << endl;
+        return GCell();
     }
 }
 

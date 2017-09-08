@@ -21,7 +21,7 @@
 using namespace std;
 
 typedef vector<unsigned int> GCell;
-typedef set<GCell, boost::function<bool(const GCell &, const GCell &)>> GCellSet;
+typedef set<GCell, boost::function<bool(const GCell &, const GCell &)> > GCellSet;
 
 inline bool operator== (const GCell& lhs, const GCell& rhs){
     if(lhs.size() != rhs.size())
@@ -37,7 +37,7 @@ inline bool operator== (const GCell& lhs, const GCell& rhs){
 class CubicalGrid
 {
 private:
-    vector<vector<float>> fieldValues;
+    vector<vector<float> > fieldValues;
 
     unsigned int xRes;
     unsigned int yRes;
@@ -46,7 +46,7 @@ private:
 public:
     CubicalGrid(vector<float>,unsigned int, unsigned int, unsigned int, unsigned int);
     CubicalGrid(vector<char*> fileNames, unsigned int, unsigned int, unsigned int);
-    CubicalGrid(unsigned int, unsigned int, unsigned int);
+    CubicalGrid();
     ~CubicalGrid();
 
 
@@ -61,8 +61,10 @@ public:
 
     //Basic functions for geometry
     unsigned int compute_centroid(unsigned int cell, vector<float>& coords);
-    void addAnalyticFunction();
     void resizeGrid();
+
+    inline float getFieldValue(unsigned int i_vertex, unsigned int i_function){return fieldValues[i_vertex][i_function];}
+    inline unsigned int nFields(){return fieldValues[0].size();}
 
     //Basic functions for topological relations
     inline unsigned int nVerts(){return xRes*yRes*zRes;}
@@ -88,11 +90,8 @@ public:
     void immediateBoundary(GCell cell, list<GCell>& cells);
     void immediateCoboundary(GCell cell, list<GCell>& cells);
 
-
-private:
     unsigned short internalIndex(GCell cellUp, GCell cellDown);
     GCell internalIndexToCell(GCell cellUp, unsigned short index);
-    unsigned short indexPair(GCell cell);
 
 };
 
