@@ -72,7 +72,6 @@ void CubicalGrid::readRAW(string fName, int nField){
         int val = fileBuf[i];
         if(val < 0) val = 128-val;
         fieldValues[i][nField] = val;
-        cout << fieldValues[i][nField] << endl;
     }
 
     fclose(filew);
@@ -105,8 +104,8 @@ void CubicalGrid::readBIN(string fName, int nField){
 }
 
 void CubicalGrid::readDAT(string fName, int nField){
-
-    float *fileBuf=(float*) malloc(nVerts()*sizeof(float));	// Pointer to our buffered data
+    // Used for reading binary files produced in python
+    float *fileBuf=(float*) malloc(nVerts()*sizeof(float));
     FILE* filew = fopen(fName.c_str(),"rb");
 
     fread((float*)fileBuf, nVerts()*sizeof(float), 1, filew);
@@ -134,8 +133,66 @@ unsigned int CubicalGrid::coordsToVertex(vector<unsigned int> coords){
     return coords[0]+coords[1]*xRes+coords[2]*(xRes*yRes);
 }
 
+
+void CubicalGrid::resizeGrid(){
+
+    vector< vector<float>> newFields((xRes*yRes*zRes)/8,vector<float>(fieldValues[0].size(),0));
+
+    int ind=0;
+    for(unsigned int z=0; z<zRes; z+=2){
+        for(unsigned int y=0; y<yRes; y+=2){
+            for(unsigned int x=0; x<xRes; x+=2){
+
+                vector<unsigned int> coords={x,y,z};
+                assert(vertexToCoords(coordsToVertex(coords)) == coords );
+                GCell vertex = {coordsToVertex(coords)};
+                list<GCell> adjv;
+                vertexVertices(vertex,adjv);
+
+                vector<float> fields(fieldValues[0].size(),0);
+
+                for(auto v : adjv){
+                    for(int f=0; f<fields.size(); f++){
+                        fields[f]+=fieldValues[v[0]][f];
+                    }
+                }
+
+                for(int f=0; f<fields.size(); f++){
+                    fields[f]=fields[f]/(float)adjv.size();
+                }
+
+                newFields[ind++]=fields;
+            }
+        }
+    }
+
+    xRes = xRes/2;
+    yRes = yRes/2;
+    zRes = zRes/2;
+
+    fieldValues = newFields;
+
+    cout << "New res: " << xRes << " " << yRes << " " << zRes << " In sizes: " << fieldValues.size() << endl;
+
+}
+
+
 unsigned int CubicalGrid::cubeIndexToVindex(unsigned int cube){
     return cube-7*nVerts();
+}
+
+void CubicalGrid::computeCentroid(unsigned iCell, vector<float> &coords){
+    GCell cell = indexToCell(iCell);
+
+    coords = {0,0,0};
+    for(auto v : cell){
+        vector<uint> vcoords = vertexToCoords(v);
+        for(int i=0; i<vcoords.size(); i++)
+            coords[i] += vcoords[i];
+    }
+
+    for(int i=0; i<coords.size(); i++)
+        coords[i] /= cell.size();
 }
 
 GCell CubicalGrid::indexToCell(unsigned int ind){

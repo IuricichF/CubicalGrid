@@ -55,12 +55,11 @@ public:
     void readBIN(string fName, int nField);
     void readDAT(string fName, int nField);
     void readASCII(string fName, int nField);
-    void readGrid();
 
     void writeVTK(char*);
 
     //Basic functions for geometry
-    unsigned int compute_centroid(unsigned int cell, vector<float>& coords);
+    void computeCentroid(unsigned iCell, vector<float> &coords);
     void resizeGrid();
 
     inline float getFieldValue(unsigned int i_vertex, unsigned int i_function){return fieldValues[i_vertex][i_function];}
